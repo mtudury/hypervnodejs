@@ -1,0 +1,22 @@
+﻿<%- contentFor('body') %>
+<h1><%= title %></h1><div class="refresh">
+    <button onclick="RefreshTable();">Refresh</button>
+</div>
+<div>
+    <table id="dtable">
+        <thead>
+            <tr>
+                <th>Virtual Machine Name</th>
+                <th>State</th>
+                <th>Health</th>
+                <th>IP</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<%- contentFor('scripts') %>
+<script src="/javascripts/jquery.dataTables.min.js"></script>
+<script src="/javascripts/dataTables.fnReloadAjax.js"></script>
+<script src="/javascripts/index.js"></script>

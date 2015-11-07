@@ -1,0 +1,38 @@
+<job id="ListAllVmAndStates">
+    <script language="JScript">
+		// windows 2008
+		//var wmipath = "winmgmts:\\\\.\\root\\virtualization";
+		// windows 2012
+		var wmipath = "winmgmts:\\\\.\\root\\virtualization\\v2";
+	
+        // API reference :
+        // http://msdn.microsoft.com/en-us/library/cc136822(v=vs.85).aspx
+        // http://msdn.microsoft.com/en-us/library/cc723874(v=vs.85).aspx
+
+        var VMGuid = WScript.Arguments(0);
+        var StateAskedFor = WScript.Arguments(1);
+
+        //WScript.echo(VMGuid);
+        //WScript.echo(StateAskedFor);
+
+        var WMIService = GetObject(wmipath);
+
+        var VMList = WMIService.ExecQuery('SELECT * FROM Msvm_ComputerSystem Where Name="' + VMGuid + '"');
+        if (VMList.Count != 1) {
+            WScript.echo("ERROR");
+            WScript.quit(1);
+        }
+        var vmms = new Enumerator(VMList);
+        vmms.moveFirst();
+        var dev = vmms.item();
+
+        var lvl = dev.RequestStateChange(StateAskedFor);
+        if ((lvl == 0) || (lvl == 4096))
+            WScript.echo("OK");
+        else {
+            WScript.echo("ERROR");
+            WScript.quit(1);
+        }
+
+    </script>
+</job>

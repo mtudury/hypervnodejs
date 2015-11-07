@@ -1,0 +1,63 @@
+<job id="ListAllVmAndStates">
+    <script language="JScript">
+		// windows 2008
+		//var wmipath = "winmgmts:\\\\.\\root\\virtualization";
+		// windows 2012
+		var wmipath = "winmgmts:\\\\.\\root\\virtualization\\v2";
+	
+	
+        // text states :
+        // http://msdn.microsoft.com/en-us/library/cc136822(v=vs.85).aspx
+        function ConvertStateToText(state,startup)
+        {
+            if (state == 0) return "Unknown";
+            if (state == 2) { if (!startup) return "Running"; else return "Enabled"; }
+            if (state == 3) { if (!startup) return "Stopped"; else return "Disabled"; }
+            if (state == 6) { if (!startup) return "Saved"; else return "Saved"; }
+            if (state == 10) { if (!startup) return "Starting"; else return "Starting"; }
+            if (state == 32768) return "Paused";
+            if (state == 32769) return "Suspended";
+            if (state == 32770) return "Starting";
+            if (state == 32771) return "Snapshotting";
+            if (state == 32773) return "Saving";
+            if (state == 32774) return "Stopping";
+            if (state == 32776) return "Pausing";
+            if (state == 32777) return "Resuming";
+            return "UnknowState";
+        }
+
+        function HealthStateToText(state)
+        {
+            if (state == 5) return "OK";
+            if (state == 20) return "Major Failure";
+            if (state == 25) return "Critical Failure";
+            return "UnknowState";
+        }
+
+        var WMIService = GetObject(wmipath);
+
+        var VMList = WMIService.ExecQuery("SELECT * FROM Msvm_ComputerSystem");
+
+        var vmms = new Enumerator(VMList);
+        vmms.moveFirst();
+
+        WScript.echo("[")
+        var first = 1;
+
+        while (!vmms.atEnd()) {
+            var dev = vmms.item();
+            var ignore = dev.Name == dev.ElementName;
+            var sep = ',';
+
+            if (!ignore) {
+                if (first == 1)
+                    sep = '';
+                WScript.Echo(sep+'{ "Name": "' + dev.Name + '", "DisplayName": "' + dev.ElementName + '", "State": ' + dev.EnabledState + ', "StateText": "' + ConvertStateToText(dev.EnabledState, false) + '", "HealthState": ' + dev.HealthState + ', "HealthStateText": "' + HealthStateToText(dev.HealthState) + '", "StartupStateText": "' + ConvertStateToText(dev.EnabledDefault, true) + '"}');
+                first = 0;
+            }
+            vmms.moveNext();
+
+        }
+        WScript.echo("]")
+    </script>
+</job>
